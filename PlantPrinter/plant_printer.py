@@ -6,6 +6,10 @@ from utils import (get_file_content_as_base64,
                    generate_by_base64)
 import logging
 import json
+import cv2
+import win32print
+import win32ui
+from PIL import Image,ImageWin
 
 # 配置基本的日志设置
 logging.basicConfig(level=logging.DEBUG,  # 设置日志级别
@@ -40,8 +44,50 @@ def style_generation(image_path,save_path,option='pencil'):
     generate_by_base64(code,save_path)
     print('Success! Image saved at {}'.format(save_path))
 
+def shooting():
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        print('Unable to turn on the camera.')
+        exit(-1)
+
+    image_path = 'captured_photo.jpg'
+    while True:
+        ret, frame = cap.read()
+        if ret:
+            cv2.imshow('Captured Image', frame)
+        else:
+            print("Unable to capture image.")
+        
+        key = cv2.waitKey(1)
+        if key == ord('k'):
+            cv2.imwrite(image_path, frame)
+            print(f"Save photo at {image_path}")
+            cap.release()
+            cv2.destroyAllWindows()
+            break
+    return image_path
+
+def printer(image_path):
+    image = Image.open(image_path)
+    printer_name = win32print.GetDefaultPrinter()
+    hprinter = win32print.OpenPrinter(printer_name)
+    try:
+        hdc = win32ui.CreateDC()
+        hdc.CreatePrinterDC(printer_name)
+        hdc.StartDoc(image_path)
+        hdc.StartPage()
+        dib = ImageWin.Dib(image)
+        dib.draw(hdc.GetHandleOutput(), (0, 0, image.size[0], image.size[1]))
+        hdc.EndPage()
+        hdc.EndDoc()
+    finally:
+        win32print.ClosePrinter(hprinter)
+
 def main():
-    style_generation('./sunflower.jpg','./sunflower_gen.png')
+    save_path = './sunflower_gen.png'
+    image_path = shooting()
+    style_generation(image_path,save_path=save_path)
+    printer(save_path)
 
 if __name__ == '__main__':
     main()
