@@ -6,8 +6,8 @@ import urllib.parse
 # API_KEY = "CnVVzJDBvTcUOVYLJc5fTAv0"
 # SECRET_KEY = "ieBih03MxboSHV9whzU33Gpk5TOrrkJQ"
 
-API_KEY = "7SAjqMH99A9Ko9BAvIX5UYtC"
-SECRET_KEY = "jie5MFcAeIoaaA5s2MLhfvleSmbyDNaN"
+# API_KEY = "7SAjqMH99A9Ko9BAvIX5UYtC"
+# SECRET_KEY = "jie5MFcAeIoaaA5s2MLhfvleSmbyDNaN"
 
 
 def get_file_content_as_base64(path, urlencoded=False):
@@ -23,11 +23,18 @@ def get_file_content_as_base64(path, urlencoded=False):
             content = urllib.parse.quote_plus(content)
     return content
 
-def get_access_token():
+def get_access_token(application_type='style_generation'):
     """
     使用 AK,SK 生成鉴权签名(Access Token)
     :return: access_token,或是None(如果错误)
     """
+    if application_type == 'style_generation':
+        API_KEY = "7SAjqMH99A9Ko9BAvIX5UYtC"
+        SECRET_KEY = "jie5MFcAeIoaaA5s2MLhfvleSmbyDNaN"
+    elif application_type == 'image_recognition':
+        API_KEY = "CnVVzJDBvTcUOVYLJc5fTAv0"
+        SECRET_KEY = "ieBih03MxboSHV9whzU33Gpk5TOrrkJQ"
+
     url = "https://aip.baidubce.com/oauth/2.0/token"
     params = {"grant_type": "client_credentials", "client_id": API_KEY, "client_secret": SECRET_KEY}
     return str(requests.post(url, params=params).json().get("access_token"))
