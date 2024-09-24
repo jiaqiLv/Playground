@@ -2,6 +2,13 @@ import base64
 import urllib
 import requests
 import urllib.parse
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from PIL import Image
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph
 
 # API_KEY = "CnVVzJDBvTcUOVYLJc5fTAv0"
 # SECRET_KEY = "ieBih03MxboSHV9whzU33Gpk5TOrrkJQ"
@@ -52,6 +59,37 @@ def generate_by_base64(code, save_path, urlencoded=False):
     with open(save_path, "wb") as f:
         f.write(image_data)
 
+def create_pdf_with_image_text(pdf_path, image_path, text):
+    pdfmetrics.registerFont(TTFont('SimSun', 'SimSun.ttf'))  # 确保将字体文件放在当前目录
+    # 创建一个PDF画布，指定A4页面大小
+    c = canvas.Canvas(pdf_path, pagesize=A4)
+    width, height = A4
+    # 添加图像
+    img = Image.open(image_path)
+    img_width, img_height = img.size
+    # 根据A4纸的尺寸对图像进行缩放
+    max_width = width - 50  # 保留一定的边距
+    max_height = height / 2  # 图像占用半页
+    if img_width > max_width or img_height > max_height:
+        scaling_factor = min(max_width / img_width, max_height / img_height)
+        img_width = img_width * scaling_factor
+        img_height = img_height * scaling_factor
+    # 在A4纸上放置图像，位置在页面顶部
+    c.drawImage(image_path, 25, height - img_height - 25, img_width, img_height)
+    # 添加文本，位置在页面的图像下方
+    text_y_position = height - img_height - 50  # 文本开始的y坐标
+    c.setFont("Helvetica", 12)
+    text_lines = text.split('\n')
+    for line in text_lines:
+        c.setFont("SimSun", 12)
+        c.drawString(25, text_y_position, line)
+        text_y_position -= 15  # 每行文本向下移15个单位
+    # 保存PDF文件
+    c.save()
+
 if __name__ == '__main__':
-    code = load_code('./code.txt')
-    generate_by_base64(code,'./save_image.png',False)
+    text = 'Hello! 你好！'
+    image_path = './photo.png'
+    create_pdf_with_image_text('./test.pdf',image_path,text)
+    # code = load_code('./code.txt')
+    # generate_by_base64(code,'./save_image.png',False)

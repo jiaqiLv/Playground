@@ -3,7 +3,8 @@ import urllib
 import requests
 from utils import (get_file_content_as_base64,
                    get_access_token,
-                   generate_by_base64)
+                   generate_by_base64,
+                   create_pdf_with_image_text)
 import logging
 import json
 import cv2
@@ -40,6 +41,17 @@ def image_recognition(image_path):
     return name_with_highest_score
 
 def style_generation(image_path,save_path,option='pencil'):
+    """
+    cartoon：卡通画风格
+    pencil：铅笔风格
+    color_pencil：彩色铅笔画风格
+    warm：彩色糖块油画风格
+    wave：神奈川冲浪里油画风格
+    lavender：薰衣草油画风格
+    mononoke：奇异油画风格
+    scream：呐喊油画风格
+    gothic：哥特油画风格
+    """
     url = "https://aip.baidubce.com/rest/2.0/image-process/v1/style_trans?access_token=" + get_access_token(application_type="style_generation")
     image = get_file_content_as_base64(image_path,True)
     payload = f'option={option}&image={image}'
@@ -57,9 +69,10 @@ def description(object_class):
     chat_comp = qianfan.ChatCompletion()
     resp = chat_comp.do(model="ERNIE-4.0-8K-Latest", messages=[{
         "role": "user",
-        "content": f"请给出下面植物的百度百科词条描述信息：{object_class}"
+        "content": f"请给出下面植物的百度百科词条描述信息，字数限制在50字以内：{object_class}"
     }])
     print(resp["body"])
+    return resp["body"]['result']
 
 def shooting():
     cap = cv2.VideoCapture(0)
@@ -101,13 +114,14 @@ def printer(image_path):
         win32print.ClosePrinter(hprinter)
 
 def main():
-    save_path = './sunflower_gen.png'
-    image_path = shooting()
-    image_path = './maple.jpg'
+    save_path = './photo.png'
+    image_path = './flower.jpg'
+    # image_path = shooting()
     object_class = image_recognition(image_path)
-    description(object_class=object_class)
-    # style_generation(image_path,save_path=save_path)
-    # printer(save_path)
+    text = description(object_class=object_class)
+    print(text)
+    style_generation(image_path,save_path=save_path)
+    create_pdf_with_image_text('./output.pdf',save_path,text)
 
 if __name__ == '__main__':
     main()
