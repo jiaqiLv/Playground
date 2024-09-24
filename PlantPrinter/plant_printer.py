@@ -41,7 +41,7 @@ def image_recognition(image_path):
     print('Object class:', name_with_highest_score)
     return name_with_highest_score
 
-def style_generation(image_path,save_path,option='pencil'):
+def style_generation(image_path,save_path,option='wave'):
     """
     cartoon：卡通画风格
     pencil：铅笔风格
@@ -121,14 +121,14 @@ def printer(image_path):
 def main():
     save_path = './photo.png'
     pdf_path = './output.pdf'
-    # image_path = './flower.jpg'
-    image_path = shooting()
+    image_path = './flower.jpg'
+    # image_path = shooting()
     object_class = image_recognition(image_path)
     text = description(object_class=object_class)
     print(text)
     style_generation(image_path,save_path=save_path)
     create_pdf_with_image_text(pdf_path,save_path,text)
-    printer_pdf(pdf_path)
+    # printer_pdf(pdf_path)
 
 if __name__ == '__main__':
     main()
