@@ -10,6 +10,7 @@ import json
 import cv2
 import win32print
 import win32ui
+import win32api
 from PIL import Image,ImageWin
 import os
 import qianfan
@@ -69,7 +70,7 @@ def description(object_class):
     chat_comp = qianfan.ChatCompletion()
     resp = chat_comp.do(model="ERNIE-4.0-8K-Latest", messages=[{
         "role": "user",
-        "content": f"请给出下面植物的百度百科词条描述信息，字数限制在50字以内：{object_class}"
+        "content": f"请给出下面植物的百度百科词条描述信息，字数限制在150字以内：{object_class}"
     }])
     print(resp["body"])
     return resp["body"]['result']
@@ -97,6 +98,10 @@ def shooting():
             break
     return image_path
 
+def printer_pdf(pdf_path):
+    printer_name = win32print.GetDefaultPrinter()
+    win32api.ShellExecute(0,'print',pdf_path,None,'.',0)
+
 def printer(image_path):
     image = Image.open(image_path)
     printer_name = win32print.GetDefaultPrinter()
@@ -115,13 +120,15 @@ def printer(image_path):
 
 def main():
     save_path = './photo.png'
-    image_path = './flower.jpg'
-    # image_path = shooting()
+    pdf_path = './output.pdf'
+    # image_path = './flower.jpg'
+    image_path = shooting()
     object_class = image_recognition(image_path)
     text = description(object_class=object_class)
     print(text)
     style_generation(image_path,save_path=save_path)
-    create_pdf_with_image_text('./output.pdf',save_path,text)
+    create_pdf_with_image_text(pdf_path,save_path,text)
+    printer_pdf(pdf_path)
 
 if __name__ == '__main__':
     main()
